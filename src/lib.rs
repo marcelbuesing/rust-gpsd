@@ -1,4 +1,3 @@
-//#[link(name = "my_build_dependency", kind = "static")]
 extern crate libc;
 
 use std::default::Default;
@@ -19,10 +18,9 @@ pub const WATCH_PPS:libc::c_int      = 0x002000;   /* enable PPS JSON */
 pub const WATCH_NEWSTYLE:libc::c_int = 0x010000;   /* force JSON streaming */
 
 
-//GPS_PATH_MAX:uint8 = 128;
-
-// MAXCHANNELS = 72 /* must be > 12 GPS + 12 GLONASS + 2 WAAS */
-// MAXUSERDEVS 4   /* max devices per user */
+const GPS_PATH_MAX: usize = 128;
+const MAXCHANNELS: usize = 72; /* must be > 12 GPS + 12 GLONASS + 2 WAAS */
+const MAXUSERDEVS: usize = 4; /* max devices per user */
 
 pub type GPSMaskT = libc::uint64_t;
 pub type TimestampT = libc::c_double;
@@ -32,7 +30,6 @@ type Longitude = libc::c_double;
 // Latitude in decimal degrees
 type Latitude = libc::c_double;
 
-pub type GPSPath = [libc::c_char; 128];
 pub type SocketT = libc::c_int;
 
 #[repr(C)]
@@ -50,7 +47,7 @@ pub struct DopT {
 
 #[repr(C)]
 pub struct DevconfigT {
-    path: [libc::c_char; 128],
+    path: [libc::c_char; GPS_PATH_MAX],
     flags: libc::c_int,
 //    #define SEEN_GPS    0x01
 //    #define SEEN_RTCM2  0x02
@@ -78,7 +75,7 @@ pub struct DevconfigT {
 impl Default for DevconfigT {
     fn default() -> DevconfigT {
         DevconfigT {
-            path: [0; 128],
+            path: [0; GPS_PATH_MAX],
             flags: Default::default(),
             driver: [0; 64],
             subtype: [0; 64],
@@ -189,8 +186,8 @@ pub struct PolicyT {
     split24: bool, /* requesting split AIS Type 24s */
     pps:     bool, /* requesting PPS in NMEA/raw modes */
     loglevel: u8,  /* requested log level of messages */
-    devpath: [libc::c_char; 128], /* specific device to watch */
-    remote:  [libc::c_char; 128], /* ...if this was passthrough */
+    devpath: [libc::c_char; GPS_PATH_MAX], /* specific device to watch */
+    remote:  [libc::c_char; GPS_PATH_MAX], /* ...if this was passthrough */
 }
 
 impl Default for PolicyT {
@@ -205,8 +202,8 @@ impl Default for PolicyT {
             split24: Default::default(),
             pps:     Default::default(),
             loglevel: Default::default(),
-            devpath: [0; 128],
-            remote:  [0; 128],
+            devpath: [0; GPS_PATH_MAX],
+            remote:  [0; GPS_PATH_MAX],
         }
     }
 }
@@ -284,7 +281,7 @@ pub struct GPSDataT {
     /* # of satellites in view */
     satellites_visible: libc::c_int,
 
-    skyview: [SatelliteT; 72],
+    skyview: [SatelliteT; MAXCHANNELS],
 
     dev: DevconfigT,/* device that shipped last update */
 
@@ -329,7 +326,7 @@ impl Default for GPSDataT {
             epe: Default::default(),
             skyview_time: Default::default(),
             satellites_visible: Default::default(),
-            skyview: [Default::default(); 72],
+            skyview: [Default::default(); MAXCHANNELS],
             dev: Default::default(),
             policy: Default::default(),
             devices: Default::default(),
@@ -370,7 +367,7 @@ impl fmt::Display for GPSDataT {
 pub struct Devices {
     time: TimestampT,
     ndevices: libc::c_int,
-    list: [DevconfigT; 4],
+    list: [DevconfigT; MAXUSERDEVS],
 }
 
 #[link(name = "gps")]
