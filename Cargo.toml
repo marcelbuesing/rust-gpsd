@@ -1,5 +1,5 @@
 [package]
-name = "libgps"
+name = "gpsd"
 version = "0.1.0"
 authors = ["Marcel Buesing <buesing.marcel@googlemail.com>"]
 
