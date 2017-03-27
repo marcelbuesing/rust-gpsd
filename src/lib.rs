@@ -18,17 +18,17 @@ pub const WATCH_PPS:libc::c_int      = 0x002000;   /* enable PPS JSON */
 pub const WATCH_NEWSTYLE:libc::c_int = 0x010000;   /* force JSON streaming */
 
 
-const GPS_PATH_MAX: usize = 128;
-const MAXCHANNELS: usize = 72; /* must be > 12 GPS + 12 GLONASS + 2 WAAS */
-const MAXUSERDEVS: usize = 4; /* max devices per user */
+pub const GPS_PATH_MAX: usize = 128;
+pub const MAXCHANNELS: usize = 72; /* must be > 12 GPS + 12 GLONASS + 2 WAAS */
+pub const MAXUSERDEVS: usize = 4; /* max devices per user */
 
 pub type GPSMaskT = libc::uint64_t;
 pub type TimestampT = libc::c_double;
 
 // Longitude in decimal degrees
-type Longitude = libc::c_double;
+pub type Longitude = libc::c_double;
 // Latitude in decimal degrees
-type Latitude = libc::c_double;
+pub type Latitude = libc::c_double;
 
 pub type SocketT = libc::c_int;
 
@@ -36,40 +36,40 @@ pub type SocketT = libc::c_int;
 #[derive(Default)]
 pub struct DopT {
     /* Dilution of precision factors */
-    xdop: libc::c_double,
-    ydop: libc::c_double,
-    pdop: libc::c_double,
-    hdop: libc::c_double,
-    vdop: libc::c_double,
-    tdop: libc::c_double,
-    gdop: libc::c_double,
+    pub xdop: libc::c_double,
+    pub ydop: libc::c_double,
+    pub pdop: libc::c_double,
+    pub hdop: libc::c_double,
+    pub vdop: libc::c_double,
+    pub tdop: libc::c_double,
+    pub gdop: libc::c_double,
 }
 
 #[repr(C)]
 pub struct DevconfigT {
-    path: [libc::c_char; GPS_PATH_MAX],
-    flags: libc::c_int,
+    pub path: [libc::c_char; GPS_PATH_MAX],
+    pub flags: libc::c_int,
 //    #define SEEN_GPS    0x01
 //    #define SEEN_RTCM2  0x02
 //    #define SEEN_RTCM3  0x04
 //    #define SEEN_AIS    0x08
-    driver: [libc::c_char; 64],
-    subtype: [libc::c_char; 64],
-    activated: libc::c_double,
+    pub driver: [libc::c_char; 64],
+    pub subtype: [libc::c_char; 64],
+    pub activated: libc::c_double,
 
     /* RS232 link parameters */
-    baudrate: libc::c_uint,
-    stopbits: libc::c_uint,
+    pub baudrate: libc::c_uint,
+    pub stopbits: libc::c_uint,
 
     /* 'N', 'O', or 'E' */
-    parity: libc::c_char,
+    pub parity: libc::c_char,
 
     /* refresh cycle time in seconds */
-    cycle: libc::c_double,
-    mincycle: libc::c_double,
+    pub cycle: libc::c_double,
+    pub mincycle: libc::c_double,
 
     /* is driver in native mode or not? */
-    driver_mode: libc::c_int,
+    pub driver_mode: libc::c_int,
 }
 
 impl Default for DevconfigT {
@@ -93,53 +93,53 @@ impl Default for DevconfigT {
 #[repr(C)]
 #[derive(Default)]
 pub struct GPSFixT {
-    time: TimestampT,   /* Time of update */
+    pub time: TimestampT,   /* Time of update */
 
     /* Mode of fix */
-    mode: libc::c_int,
+    pub mode: libc::c_int,
 //    #define MODE_NOT_SEEN   0   /* mode update not seen yet */
 //    #define MODE_NO_FIX 1   /* none */
 //    #define MODE_2D     2   /* good for latitude/longitude */
 //    #define MODE_3D     3   /* good for altitude/climb too */
 
     /* Expected time uncertainty */
-    ept: libc::c_double,
+    pub ept: libc::c_double,
 
     /* Latitude in degrees (valid if mode >= 2) */
-    latitude: Latitude,
+    pub latitude: Latitude,
 
     /* Latitude position uncertainty, meters */
-    epy: libc::c_double,
+    pub epy: libc::c_double,
 
     /* Longitude in degrees (valid if mode >= 2) */
-    longitude: Longitude,
+    pub longitude: Longitude,
 
     /* Longitude position uncertainty, meters */
-    epx: libc::c_double,
+    pub epx: libc::c_double,
 
     /* Altitude in meters (valid if mode == 3) */
-    altitude: libc::c_double,
+    pub altitude: libc::c_double,
 
     /* Vertical position uncertainty, meters */
-    epv: libc::c_double,
+    pub epv: libc::c_double,
 
     /* Course made good (relative to true north) */
-    track: libc::c_double,
+    pub track: libc::c_double,
 
     /* Track uncertainty, degrees */
-    epd: libc::c_double,
+    pub epd: libc::c_double,
 
     /* Speed over ground, meters/sec */
-    speed: libc::c_double,
+    pub speed: libc::c_double,
 
     /* Speed uncertainty, meters/sec */
-    eps: libc::c_double,
+    pub eps: libc::c_double,
 
     /* Vertical speed, meters/sec */
-    climb: libc::c_double,
+    pub climb: libc::c_double,
 
     /* Vertical speed uncertainty */
-    epc: libc::c_double,
+    pub epc: libc::c_double,
 }
 
 impl fmt::Display for GPSFixT {
@@ -177,17 +177,17 @@ impl fmt::Display for GPSFixT {
 
 #[repr(C)]
 pub struct PolicyT {
-    watcher: bool, /* is watcher mode on? */
-    json:    bool, /* requesting JSON? */
-    nmea:    bool, /* requesting dumping as NMEA? */
-    raw:     libc::c_int, /* requesting raw data? */
-    scaled:  bool, /* requesting report scaling? */
-    timing:  bool, /* requesting timing info */
-    split24: bool, /* requesting split AIS Type 24s */
-    pps:     bool, /* requesting PPS in NMEA/raw modes */
-    loglevel: u8,  /* requested log level of messages */
-    devpath: [libc::c_char; GPS_PATH_MAX], /* specific device to watch */
-    remote:  [libc::c_char; GPS_PATH_MAX], /* ...if this was passthrough */
+    pub watcher: bool, /* is watcher mode on? */
+    pub json:    bool, /* requesting JSON? */
+    pub nmea:    bool, /* requesting dumping as NMEA? */
+    pub raw:     libc::c_int, /* requesting raw data? */
+    pub scaled:  bool, /* requesting report scaling? */
+    pub timing:  bool, /* requesting timing info */
+    pub split24: bool, /* requesting split AIS Type 24s */
+    pub pps:     bool, /* requesting PPS in NMEA/raw modes */
+    pub loglevel: u8,  /* requested log level of messages */
+    pub devpath: [libc::c_char; GPS_PATH_MAX], /* specific device to watch */
+    pub remote:  [libc::c_char; GPS_PATH_MAX], /* ...if this was passthrough */
 }
 
 impl Default for PolicyT {
@@ -212,15 +212,15 @@ impl Default for PolicyT {
 #[repr(C)]
 pub struct SatelliteT {
     /* signal-to-noise ratio (dB) */
-    ss: libc::c_double,
+    pub ss: libc::c_double,
     /* PRNs of satellites used in solution */
-    used: bool,
+    pub used: bool,
     /* PRNs of satellite */
-    prn: libc::c_short,
+    pub prn: libc::c_short,
     /* elevation of satellite */
-    elevation: libc::c_short,
+    pub elevation: libc::c_short,
     /* azimuth */
-    azimuth: libc::c_short,
+    pub azimuth: libc::c_short,
 }
 
 impl Default for SatelliteT {
@@ -239,7 +239,7 @@ impl Default for SatelliteT {
 pub struct GPSDataT {
 
     /* has field been set since this was last cleared? */
-    set: GPSMaskT,
+    pub set: GPSMaskT,
 
    /* NZ if GPS is on line, 0 if not.
     *
@@ -250,46 +250,46 @@ pub struct GPSDataT {
     * sentences, this field will be
     * prone to false zero values.
     */
-    online: TimestampT,
+    pub online: TimestampT,
 
 //    #ifndef USE_QT
-    gps_fd: SocketT, /* socket or file descriptor to GPS */
+    pub gps_fd: SocketT, /* socket or file descriptor to GPS */
 //    #else
 //    gps_fd: *mut libc::c_void,
 //    #endif
 
     /* accumulated PVT data */
-    fix: GPSFixT,
+    pub fix: GPSFixT,
 
     /* this should move to the per-driver structure */
-    separation: libc::c_double,/* Geoidal separation, MSL - WGS84 (Meters) */
+    pub separation: libc::c_double,/* Geoidal separation, MSL - WGS84 (Meters) */
 
     /* GPS status -- always valid */
-    status: libc::c_int ,/* Do we have a fix? */
+    pub status: libc::c_int ,/* Do we have a fix? */
 
     /* precision of fix -- valid if satellites_used > 0 */
-    satellites_used: libc::c_int ,/* Number of satellites used in solution */
+    pub satellites_used: libc::c_int ,/* Number of satellites used in solution */
 
-    dop: DopT,
+    pub dop: DopT,
 
     /* redundant with the estimate elements in the fix structure */
-    epe: libc::c_double,  /* spherical position error, 95% confidence (meters)  */
+    pub epe: libc::c_double,  /* spherical position error, 95% confidence (meters)  */
 
     /* satellite status -- valid when satellites_visible > 0 */
-    skyview_time: TimestampT,/* skyview timestamp */
+    pub skyview_time: TimestampT,/* skyview timestamp */
 
     /* # of satellites in view */
-    satellites_visible: libc::c_int,
+    pub satellites_visible: libc::c_int,
 
-    skyview: [SatelliteT; MAXCHANNELS],
+    pub skyview: [SatelliteT; MAXCHANNELS],
 
-    dev: DevconfigT,/* device that shipped last update */
+    pub dev: DevconfigT,/* device that shipped last update */
 
-    policy: PolicyT,/* our listening policy */
+    pub policy: PolicyT,/* our listening policy */
 
-    devices: Devices,
+    pub devices: Devices,
 
-    union_never_reported: [libc::c_int; 1418], // rtcm3_t largest in union -> sizeof 5672 = 4*1418
+    pub union_never_reported: [libc::c_int; 1418], // rtcm3_t largest in union -> sizeof 5672 = 4*1418
     /* pack things never reported together to reduce structure size */
    // #define UNION_SET(RTCM2_SET|RTCM3_SET|SUBFRAME_SET|AIS_SET|ATTITUDE_SET|GST_SET|VERSION_SET|DEVICELIST_SET|LOGMESSAGE_SET|ERROR_SET)
 //    union NeverReported {
@@ -307,7 +307,7 @@ pub struct GPSDataT {
 //    }
 
     /* Private data - client code must not set this */
-    privdata: *mut libc::c_void,
+    pub privdata: *mut libc::c_void,
     //void *privdata,
 }
 
@@ -365,9 +365,9 @@ impl fmt::Display for GPSDataT {
 #[repr(C)]
 #[derive(Default)]
 pub struct Devices {
-    time: TimestampT,
-    ndevices: libc::c_int,
-    list: [DevconfigT; MAXUSERDEVS],
+    pub time: TimestampT,
+    pub ndevices: libc::c_int,
+    pub list: [DevconfigT; MAXUSERDEVS],
 }
 
 #[link(name = "gps")]
