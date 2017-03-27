@@ -2,6 +2,10 @@
 name = "gpsd"
 version = "0.1.0"
 authors = ["Marcel Buesing <buesing.marcel@googlemail.com>"]
+license = "MIT"
+homepage = "https://github.com/marcelbuesing/rust-gpsd"
+repository = "https://github.com/marcelbuesing/rust-gpsd"
+description = "Rust bindings for libgps (gpsd)."
 include = ["**/*.rs", "Cargo.toml",]
 
 [dependencies]
