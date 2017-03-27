@@ -1,9 +1,9 @@
 //#[link(name = "my_build_dependency", kind = "static")]
 extern crate libc;
-//use libc::size_t;
 
 use std::default::Default;
-
+use std::ptr;
+use std::fmt;
 
 pub const WATCH_ENABLE:libc::c_int   = 0x000001;   /* enable streaming */
 pub const WATCH_DISABLE:libc::c_int  = 0x000002;   /* disable watching */
@@ -28,6 +28,7 @@ pub type GPSMaskT = libc::uint64_t;
 pub type TimestampT = libc::c_double;
 
 pub type GPSPath = [libc::c_char; 128];
+pub type SocketT = libc::c_int;
 
 #[repr(C)]
 #[derive(Default)]
@@ -138,12 +139,46 @@ pub struct GPSFixT {
     /* Vertical speed uncertainty */
     epc: libc::c_double,
 }
+
+impl fmt::Display for GPSFixT {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+               "\nGPSFIX \n \
+                Time {}\n \
+                Mode {}\n \
+                Ept {}\n \
+                Lat {}\n \
+                Epy {}\n \
+                Lon {}\n \
+                Epx {}\n \
+                Altitude {}\n \
+                Epv {}\n \
+                Track {}\n \
+                Epd {}\n \
+                Speed {}"
+               ,
+               self.time,
+               self.mode,
+               self.ept,
+               self.latitude,
+               self.epy,
+               self.longitude,
+               self.epx,
+               self.altitude,
+               self.epv,
+               self.track,
+               self.epd,
+               self.speed
+         )
+    }
+}
+
 #[repr(C)]
 pub struct PolicyT {
     watcher: bool, /* is watcher mode on? */
     json:    bool, /* requesting JSON? */
     nmea:    bool, /* requesting dumping as NMEA? */
-    raw:     i16, /* requesting raw data? */
+    raw:     libc::c_int, /* requesting raw data? */
     scaled:  bool, /* requesting report scaling? */
     timing:  bool, /* requesting timing info */
     split24: bool, /* requesting split AIS Type 24s */
@@ -171,6 +206,33 @@ impl Default for PolicyT {
     }
 }
 
+#[derive(Clone, Copy)]
+#[repr(C)]
+pub struct SatelliteT {
+    /* signal-to-noise ratio (dB) */
+    ss: libc::c_double,
+    /* PRNs of satellites used in solution */
+    used: bool,
+    /* PRNs of satellite */
+    prn: libc::c_short,
+    /* elevation of satellite */
+    elevation: libc::c_short,
+    /* azimuth */
+    azimuth: libc::c_short,
+}
+
+impl Default for SatelliteT {
+    fn default() -> SatelliteT {
+        SatelliteT {
+            ss: Default::default(),
+            used: Default::default(),
+            prn: Default::default(),
+            elevation: Default::default(),
+            azimuth: Default::default(),
+       }
+    }
+}
+
 #[repr(C)]
 pub struct GPSDataT {
 
@@ -189,9 +251,9 @@ pub struct GPSDataT {
     online: TimestampT,
 
 //    #ifndef USE_QT
-//      gps_fd: socket_t/* socket or file descriptor to GPS */
+    gps_fd: SocketT, /* socket or file descriptor to GPS */
 //    #else
-//      gps_fd: *void,
+//    gps_fd: *mut libc::c_void,
 //    #endif
 
     /* accumulated PVT data */
@@ -205,7 +267,7 @@ pub struct GPSDataT {
 
     /* precision of fix -- valid if satellites_used > 0 */
     satellites_used: libc::c_int ,/* Number of satellites used in solution */
-    lused: [libc::c_int; 72],/* PRNs of satellites used in solution */
+
     dop: DopT,
 
     /* redundant with the estimate elements in the fix structure */
@@ -217,25 +279,15 @@ pub struct GPSDataT {
     /* # of satellites in view */
     satellites_visible: libc::c_int,
 
-    /* PRNs of satellite */
-    prn: [libc::c_int; 72],
-
-    /* elevation of satellite */
-    elevation: [libc::c_int; 72],
-
-    /* azimuth */
-    azimuth: [libc::c_int; 72],
-
-    /* signal-to-noise ratio (dB) */
-    ss: [libc::c_double; 72],
+    skyview: [SatelliteT; 72],
 
     dev: DevconfigT,/* device that shipped last update */
 
     policy: PolicyT,/* our listening policy */
 
-    /* should be moved to privdata someday */
-    tag: [libc::c_char; 73],/* tag of last sentence processed */
+    devices: Devices,
 
+    union_never_reported: [libc::c_int; 1418], // rtcm3_t largest in union -> sizeof 5672 = 4*1418
     /* pack things never reported together to reduce structure size */
    // #define UNION_SET(RTCM2_SET|RTCM3_SET|SUBFRAME_SET|AIS_SET|ATTITUDE_SET|GST_SET|VERSION_SET|DEVICELIST_SET|LOGMESSAGE_SET|ERROR_SET)
 //    union NeverReported {
@@ -253,6 +305,7 @@ pub struct GPSDataT {
 //    }
 
     /* Private data - client code must not set this */
+    privdata: *mut libc::c_void,
     //void *privdata,
 }
 
@@ -261,23 +314,49 @@ impl Default for GPSDataT {
         GPSDataT {
             set: Default::default(),
             online: Default::default(),
+            gps_fd:  Default::default(),
+//            gps_fd: ptr::null_mut(),
             fix: Default::default(),
             separation: Default::default(),
             status: Default::default(),
             satellites_used: Default::default(),
-            lused: [0;72],
             dop: Default::default(),
             epe: Default::default(),
             skyview_time: Default::default(),
             satellites_visible: Default::default(),
-            prn: [0;72],
-            elevation: [0;72],
-            azimuth: [0;72],
-            ss:[0.0;72],
+            skyview: [Default::default(); 72],
             dev: Default::default(),
             policy: Default::default(),
-            tag: [Default::default(); 73]
+            devices: Default::default(),
+            union_never_reported: [Default::default(); 1418],
+            privdata: ptr::null_mut(),
         }
+    }
+}
+
+impl fmt::Display for GPSDataT {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+                "\nGPSDATAT \n \
+                 Set {}\n \
+                 Online {}\n \n\
+                 Fix {}\n \n \
+                 Separation {}\n \
+                 Status {}\n \
+                 SatellitesUsed {}\n \
+                 Epe {}\n \
+                 SkyviewTime {}\n \
+                 SatellitesVisible {}\n",
+               self.set,
+               self.online,
+               self.fix,
+               self.separation,
+               self.status,
+               self.satellites_used,
+               self.epe,
+               self.skyview_time,
+               self.satellites_visible,
+        )
     }
 }
 
@@ -321,6 +400,14 @@ mod tests {
     fn it_works() {
         unsafe {
             use GPSDataT;
+            use GPSFixT;
+            use DopT;
+            use DevconfigT;
+            use PolicyT;
+            use GPSMaskT;
+            use TimestampT;
+            use SocketT;
+            use Devices;
             use gps_sock_open;
             use gps_sock_mainloop;
             use gps_sock_stream;
@@ -329,15 +416,26 @@ mod tests {
             use WATCH_ENABLE;
             use std::ffi::CString;
             use std::ptr;
+            use std::mem;
 
             let mut gps_data: GPSDataT = Default::default();
             let ip = CString::new("127.0.0.1").expect("Invalid IP");
             let port = CString::new("2947").expect("Invalid Port");
 
+            println!("GPSDataT Size {}", mem::size_of::<GPSDataT>());
+            println!("GpsFixT Size {}", mem::size_of::<GPSFixT>());
+            println!("DopT Size {}", mem::size_of::<DopT>());
+            println!("DevconfigT Size {}", mem::size_of::<DevconfigT>());
+            println!("PolicyT Size {}", mem::size_of::<PolicyT>());
+            println!("GPSMaskT Size {}", mem::size_of::<GPSMaskT>());
+            println!("TimestampT Size {}", mem::size_of::<TimestampT>());
+            println!("SocketT Size {}", mem::size_of::<SocketT>());
+            println!("Devices Size {}", mem::size_of::<Devices>());
 
             extern "C" fn print_gps(gps_data: *mut GPSDataT) {
                 unsafe {
-                    println!("Satellites visible {}, online {}", (*gps_data).satellites_visible, (*gps_data).online)
+                    println!("{}", (*gps_data));
+                    println!("{}", (*gps_data).fix);
                 }
             }
 
