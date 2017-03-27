@@ -2,6 +2,7 @@
 name = "gpsd"
 version = "0.1.0"
 authors = ["Marcel Buesing <buesing.marcel@googlemail.com>"]
+include = ["**/*.rs", "Cargo.toml",]
 
 [dependencies]
 libc = "0.2.21"
