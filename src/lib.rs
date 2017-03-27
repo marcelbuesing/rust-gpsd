@@ -27,6 +27,11 @@ pub const WATCH_NEWSTYLE:libc::c_int = 0x010000;   /* force JSON streaming */
 pub type GPSMaskT = libc::uint64_t;
 pub type TimestampT = libc::c_double;
 
+// Longitude in decimal degrees
+type Longitude = libc::c_double;
+// Latitude in decimal degrees
+type Latitude = libc::c_double;
+
 pub type GPSPath = [libc::c_char; 128];
 pub type SocketT = libc::c_int;
 
@@ -104,13 +109,13 @@ pub struct GPSFixT {
     ept: libc::c_double,
 
     /* Latitude in degrees (valid if mode >= 2) */
-    latitude: libc::c_double,
+    latitude: Latitude,
 
     /* Latitude position uncertainty, meters */
     epy: libc::c_double,
 
     /* Longitude in degrees (valid if mode >= 2) */
-    longitude: libc::c_double,
+    longitude: Longitude,
 
     /* Longitude position uncertainty, meters */
     epx: libc::c_double,
@@ -434,6 +439,7 @@ mod tests {
 
             extern "C" fn print_gps(gps_data: *mut GPSDataT) {
                 unsafe {
+                    println!("Timestamp {}", (*gps_data).fix.time);
                     println!("{}", (*gps_data));
                     println!("{}", (*gps_data).fix);
                 }
