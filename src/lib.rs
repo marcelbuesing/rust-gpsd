@@ -382,10 +382,10 @@ extern "C" {
     pub fn gps_sock_data(gpsdata: *const GPSDataT) -> libc::c_char;
     //
 //    extern int gps_sock_mainloop(struct gps_data_t *, int,
-//                        void (*)(struct gps_data_t *));
-    fn gps_sock_mainloop(GPSDataT: *mut GPSDataT,
-                         timeout: libc::c_int,
-                         hook: extern "C" fn (*mut GPSDataT)) -> libc::c_int;
+    //                        void (*)(struct gps_data_t *));
+    pub fn gps_sock_mainloop(GPSDataT: *mut GPSDataT,
+                             timeout: libc::c_int,
+                             hook: extern "C" fn (*mut GPSDataT)) -> libc::c_int;
     pub fn gps_shm_open(gpsdata: *mut GPSDataT) -> libc::c_int;
     pub fn gps_shm_close(gpsdata: *mut GPSDataT);
     pub fn gps_shm_waiting(gpsdata: *const GPSDataT, timeout: libc::c_long)  -> bool;
