@@ -1,11 +1,13 @@
 [package]
 name = "gpsd"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Marcel Buesing <buesing.marcel@googlemail.com>"]
 license = "MIT"
 homepage = "https://github.com/marcelbuesing/rust-gpsd"
 repository = "https://github.com/marcelbuesing/rust-gpsd"
 description = "Rust bindings for libgps (gpsd)."
+documentation = "https://docs.rs/gpsd"
+readme = "README.md"
 include = ["**/*.rs", "Cargo.toml",]
 
 [dependencies]
